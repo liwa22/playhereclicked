@@ -1,878 +1,170 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOODSTREAM PRO MILD</title>
 
-  <title>DOODSTREAM PRO MILD</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      min-height: 100%;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      width: 100%;
-      padding: 15px 20px;
-      text-align: center;
-      background: #111;
-      border-bottom: 1px solid #222;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
-      flex: 1;
-    }
-
-    .player-box {
-      width: 100%;
-      background: #111;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #222;
-    }
-
-    video {
-      display: block;
-      width: 100%;
-      height: auto;
-      min-height: 200px;
-      background: #000;
-    }
-
-    .status {
-      padding: 12px 15px;
-      font-size: 14px;
-      background: #111;
-      color: #aaa;
-      word-break: break-word;
-    }
-
-    .error {
-      color: #ff5555;
-    }
-
-    .success {
-      color: #55dd77;
-    }
-
-    .info {
-      color: #aaa;
-    }
-
-    .debug {
-      margin-top: 20px;
-      padding: 15px;
-      background: #080808;
-      border: 1px solid #222;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 500px;
-      overflow-y: auto;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 15px;
-    }
-
-    button {
-      border: 0;
-      border-radius: 6px;
-      padding: 10px 15px;
-      background: #222;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #333;
-    }
-
-    footer {
-      padding: 20px;
-      text-align: center;
-      color: #666;
-      font-size: 12px;
-    }
-  </style>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: #000;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+.app-title {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  pointer-events: none;
+}
+.feed-container {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: mandatory;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.video-card {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.status-msg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #aaa;
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>DOODSTREAM PRO MILD</h1>
-</header>
-
-<div class="container">
-
-  <div class="player-box">
-
-    <video
-      id="videoPlayer"
-      controls
-      playsinline
-      preload="metadata"
-      crossorigin="anonymous"
-    >
-      Browser kamu tidak mendukung HTML5 Video.
-    </video>
-
-    <div id="status" class="status">
-      Memuat video...
-    </div>
-
-  </div>
-
-  <div class="buttons">
-    <button onclick="reloadVideo()">Reload Video</button>
-    <button onclick="showDebug()">Debug</button>
-  </div>
-
-  <div id="debug" class="debug"></div>
-
-</div>
-
-<footer>
-  © 2025 Doodstream Pro Mild. All rights reserved.
-</footer>
-
+<div class="app-title">DOODSTREAM PRO MILD</div>
+<div class="feed-container" id="feed"></div>
 
 <script>
+(async () => {
+  const feed = document.getElementById("feed");
+  const url = new URL(location.href);
 
-(function () {
-
-  "use strict";
-
-  const video = document.getElementById("videoPlayer");
-  const status = document.getElementById("status");
-  const debugBox = document.getElementById("debug");
-
-  let debugLines = [];
-  let currentVideoId = "";
-  let currentCDN = "";
-
-  function log(message) {
-
-    const now = new Date();
-
-    const time =
-      String(now.getHours()).padStart(2, "0") + ":" +
-      String(now.getMinutes()).padStart(2, "0") + ":" +
-      String(now.getSeconds()).padStart(2, "0");
-
-    const line = "[" + time + "] " + message;
-
-    console.log(line);
-
-    debugLines.push(line);
-
-    debugBox.textContent = debugLines.join("\n");
+  // Ambil ID dari query parameter, hash, atau pathname
+  let targetId = url.searchParams.get("v");
+  if (!targetId && location.hash) {
+    targetId = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
   }
-
-
-  function setStatus(message, type) {
-
-    status.textContent = message;
-
-    status.className = "status";
-
-    if (type === "error") {
-      status.classList.add("error");
-    }
-
-    if (type === "success") {
-      status.classList.add("success");
-    }
-
-    if (type === "info") {
-      status.classList.add("info");
-    }
+  if (!targetId) {
+    targetId = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, ""));
   }
+  if (targetId === "404.html") targetId = null;
 
+  // Fungsi mengacak array (Fisher-Yates Shuffle)
+  const shuffle = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
 
-  function getVideoId() {
+  try {
+    const res = await fetch("/Video.json");
+    if (!res.ok) throw new Error();
 
-    const url = new URL(window.location.href);
+    const data = await res.json();
+    let videos = data.videos ? data.videos.filter(v => v && v.cdn) : [];
 
-    log("URL lengkap:");
-    log(window.location.href);
-
-    log("Origin:");
-    log(window.location.origin);
-
-    log("Pathname:");
-    log(window.location.pathname);
-
-    log("Search:");
-    log(window.location.search);
-
-    log("Hash:");
-    log(window.location.hash);
-
-    let id = "";
-
-    /*
-     * PRIORITAS 1
-     * ?v=A7k2Q.mp4
-     */
-
-    const queryId = url.searchParams.get("v");
-
-    if (queryId) {
-
-      id = queryId.trim();
-
-      log("ID ditemukan dari QUERY ?v=");
-
+    if (videos.length === 0) {
+      feed.innerHTML = `<div class="status-msg">Video tidak ditemukan.</div>`;
+      return;
     }
 
+    // Acak daftar video
+    videos = shuffle(videos);
 
-    /*
-     * PRIORITAS 2
-     * #/A7k2Q.mp4
-     */
-
-    if (!id && window.location.hash) {
-
-      let hash = window.location.hash;
-
-      hash = hash.replace(/^#/, "");
-      hash = hash.replace(/^\/+/, "");
-
-      if (hash) {
-
-        id = decodeURIComponent(hash).trim();
-
-        log("ID ditemukan dari HASH #/");
-
+    // Jika ada ID target dari URL, pindahkan video tersebut ke paling atas
+    if (targetId) {
+      const targetIndex = videos.findIndex(v => String(v.id).trim() === String(targetId).trim());
+      if (targetIndex !== -1) {
+        const [targetVideo] = videos.splice(targetIndex, 1);
+        videos.unshift(targetVideo);
       }
-
     }
 
-
-    /*
-     * PRIORITAS 3
-     * /A7k2Q.mp4
-     */
-
-    if (!id) {
-
-      let path = window.location.pathname;
-
-      path = path.replace(/^\/+/, "");
-      path = path.replace(/\/+$/, "");
-
-      if (path && path !== "404.html") {
-
-        id = decodeURIComponent(path).trim();
-
-        log("ID ditemukan dari PATH /");
-
-      }
-
-    }
-
-
-    log("==============================");
-
-    log("ID akhir yang digunakan:");
-
-    log(id || "(KOSONG)");
-
-    return id;
-
-  }
-
-
-  async function loadVideo() {
-
-    debugLines = [];
-
-    debugBox.textContent = "";
-
-    log("==============================");
-    log("MEMULAI VIDEO PLAYER");
-    log("==============================");
-
-    setStatus("Mencari video...", "info");
-
-
-    /*
-     * 1. AMBIL ID
-     */
-
-    log("1. MENGAMBIL VIDEO ID");
-
-    currentVideoId = getVideoId();
-
-
-    if (!currentVideoId) {
-
-      log("ERROR: ID VIDEO KOSONG");
-
-      setStatus(
-        "Video ID tidak ditemukan.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * 2. AMBIL JSON
-     */
-
-    log("==============================");
-
-    log("2. MENGAMBIL Video.json");
-
-    const jsonURL =
-      "/Video.json?nocache=" +
-      Date.now();
-
-    log("URL JSON:");
-    log(window.location.origin + "/Video.json");
-
-
-    let response;
-
-    try {
-
-      response = await fetch(jsonURL, {
-        method: "GET",
-        cache: "no-store"
-      });
-
-    } catch (error) {
-
-      log("ERROR FETCH JSON:");
-      log(error.message);
-
-      setStatus(
-        "Gagal mengambil Video.json.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    log("HTTP Status:");
-    log(String(response.status));
-
-    log("HTTP OK:");
-    log(String(response.ok));
-
-    log("Content-Type:");
-    log(
-      response.headers.get("content-type") ||
-      "(tidak ada)"
-    );
-
-
-    if (!response.ok) {
-
-      log("ERROR: HTTP JSON GAGAL");
-
-      setStatus(
-        "Video.json tidak bisa dibaca.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * 3. PARSE JSON
-     */
-
-    log("==============================");
-
-    log("3. PARSE Video.json");
-
-    let data;
-
-    try {
-
-      const text = await response.text();
-
-      log("Ukuran JSON:");
-      log(text.length + " karakter");
-
-      data = JSON.parse(text);
-
-    } catch (error) {
-
-      log("ERROR PARSE JSON:");
-      log(error.message);
-
-      setStatus(
-        "Format Video.json tidak valid.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    if (
-      !data ||
-      !Array.isArray(data.videos)
-    ) {
-
-      log("ERROR: FORMAT JSON SALAH");
-
-      log(
-        'JSON harus mempunyai format {"videos":[...]}'
-      );
-
-      setStatus(
-        "Format Video.json salah.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    log("JSON berhasil diparse.");
-
-    log("Format JSON benar.");
-
-    log("Jumlah video:");
-    log(String(data.videos.length));
-
-
-    /*
-     * 4. CARI VIDEO
-     */
-
-    log("==============================");
-
-    log("4. MENCARI ID VIDEO");
-
-    log("ID dicari:");
-    log(currentVideoId);
-
-
-    const videoData = data.videos.find(function (item) {
-
-      if (!item || !item.id) {
-        return false;
-      }
-
-      return String(item.id).trim() ===
-             String(currentVideoId).trim();
-
+    // Render kartu video ke DOM
+    videos.forEach((v) => {
+      const card = document.createElement("div");
+      card.className = "video-card";
+      
+      const videoEl = document.createElement("video");
+      videoEl.src = v.cdn;
+      videoEl.controls = true;
+      videoEl.playsInline = true;
+      videoEl.preload = "metadata";
+      videoEl.loop = true;
+
+      const statusEl = document.createElement("div");
+      statusEl.className = "status-msg";
+      statusEl.textContent = "Memuat video...";
+
+      videoEl.onloadeddata = () => statusEl.remove();
+      videoEl.onerror = () => { statusEl.textContent = "Video gagal dimuat."; };
+
+      card.appendChild(videoEl);
+      card.appendChild(statusEl);
+      feed.appendChild(card);
     });
 
-
-    if (!videoData) {
-
-      log("VIDEO TIDAK DITEMUKAN!");
-
-      setStatus(
-        "Video tidak ditemukan di Video.json.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    log("VIDEO DITEMUKAN!");
-
-    log("ID JSON:");
-    log(String(videoData.id));
-
-
-    /*
-     * 5. CEK CDN
-     */
-
-    log("==============================");
-
-    log("5. CEK CDN");
-
-
-    if (!videoData.cdn) {
-
-      log("ERROR: CDN KOSONG");
-
-      setStatus(
-        "URL CDN video kosong.",
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    currentCDN = String(videoData.cdn).trim();
-
-
-    log("CDN ditemukan:");
-    log(currentCDN);
-
-
-    /*
-     * 6. PASANG VIDEO
-     */
-
-    log("==============================");
-
-    log("6. MEMASANG CDN KE VIDEO");
-
-    log("Source:");
-    log(currentCDN);
-
-
-    setStatus(
-      "Memuat video...",
-      "info"
-    );
-
-
-    /*
-     * Hapus source lama
-     */
-
-    video.pause();
-
-    video.removeAttribute("src");
-
-    video.load();
-
-
-    /*
-     * Pasang source baru
-     */
-
-    video.src = currentCDN;
-
-
-    log("video.src:");
-    log(video.src);
-
-
-    log("Memanggil video.load()...");
-
-    video.load();
-
-    log("video.load() selesai.");
-
-
-    /*
-     * 7. CEK NETWORK STATE
-     */
-
-    log("==============================");
-
-    log("7. STATUS VIDEO");
-
-    log("networkState:");
-    log(String(video.networkState));
-
-    log("readyState:");
-    log(String(video.readyState));
-
-    log("currentSrc:");
-    log(video.currentSrc || "(kosong)");
-
-  }
-
-
-  /*
-   * VIDEO EVENTS
-   */
-
-  video.addEventListener(
-    "loadstart",
-    function () {
-
-      log("VIDEO EVENT: loadstart");
-
-    }
-  );
-
-
-  video.addEventListener(
-    "durationchange",
-    function () {
-
-      log("VIDEO EVENT: durationchange");
-
-      log("Duration:");
-      log(String(video.duration));
-
-    }
-  );
-
-
-  video.addEventListener(
-    "loadedmetadata",
-    function () {
-
-      log("VIDEO EVENT: loadedmetadata");
-
-      log("Video width:");
-      log(String(video.videoWidth));
-
-      log("Video height:");
-      log(String(video.videoHeight));
-
-      log("Duration:");
-      log(String(video.duration));
-
-      setStatus(
-        "Video siap diputar.",
-        "success"
-      );
-
-    }
-  );
-
-
-  video.addEventListener(
-    "loadeddata",
-    function () {
-
-      log("VIDEO EVENT: loadeddata");
-
-    }
-  );
-
-
-  video.addEventListener(
-    "canplay",
-    function () {
-
-      log("VIDEO EVENT: canplay");
-
-      setStatus(
-        "Video siap diputar.",
-        "success"
-      );
-
-    }
-  );
-
-
-  video.addEventListener(
-    "canplaythrough",
-    function () {
-
-      log("VIDEO EVENT: canplaythrough");
-
-    }
-  );
-
-
-  video.addEventListener(
-    "waiting",
-    function () {
-
-      log("VIDEO EVENT: waiting");
-
-      setStatus(
-        "Video sedang buffering...",
-        "info"
-      );
-
-    }
-  );
-
-
-  video.addEventListener(
-    "playing",
-    function () {
-
-      log("VIDEO EVENT: playing");
-
-      setStatus(
-        "Video sedang diputar.",
-        "success"
-      );
-
-    }
-  );
-
-
-  video.addEventListener(
-    "pause",
-    function () {
-
-      log("VIDEO EVENT: pause");
-
-    }
-  );
-
-
-  video.addEventListener(
-    "ended",
-    function () {
-
-      log("VIDEO EVENT: ended");
-
-      setStatus(
-        "Video selesai.",
-        "info"
-      );
-
-    }
-  );
-
-
-  video.addEventListener(
-    "error",
-    function () {
-
-      log("==============================");
-
-      log("VIDEO EVENT: ERROR");
-
-      if (video.error) {
-
-        log("Video error code:");
-        log(String(video.error.code));
-
-        log(
-          "Video error message:"
-        );
-
-        log(
-          video.error.message ||
-          "(tidak ada pesan)"
-        );
-
-        switch (video.error.code) {
-
-          case 1:
-            log(
-              "MEDIA_ERR_ABORTED: " +
-              "Pemutaran dibatalkan."
-            );
-            break;
-
-          case 2:
-            log(
-              "MEDIA_ERR_NETWORK: " +
-              "Masalah jaringan/CDN."
-            );
-            break;
-
-          case 3:
-            log(
-              "MEDIA_ERR_DECODE: " +
-              "Browser gagal decode video."
-            );
-            break;
-
-          case 4:
-            log(
-              "MEDIA_ERR_SRC_NOT_SUPPORTED: " +
-              "Source tidak didukung."
-            );
-            break;
-
+    // Fitur Auto Play/Pause berbasis Intersection Observer (Scroll Detection)
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target.querySelector("video");
+        if (!video) return;
+
+        if (entry.isIntersecting) {
+          video.play().catch(() => {
+            // Menangani pembatasan autoplay browser jika video bersuara
+          });
+        } else {
+          video.pause();
+          video.currentTime = 0;
         }
+      });
+    }, { threshold: 0.6 });
 
-      } else {
+    document.querySelectorAll(".video-card").forEach(card => observer.observe(card));
 
-        log("Tidak ada objek video.error.");
-
-      }
-
-
-      log("Current source:");
-      log(video.currentSrc || "(kosong)");
-
-
-      setStatus(
-        "Video gagal dimuat. Lihat Debug.",
-        "error"
-      );
-
-    }
-  );
-
-
-  /*
-   * TOMBOL RELOAD
-   */
-
-  window.reloadVideo = function () {
-
-    log("==============================");
-
-    log("RELOAD VIDEO");
-
-    loadVideo();
-
-  };
-
-
-  /*
-   * TOMBOL DEBUG
-   */
-
-  window.showDebug = function () {
-
-    debugBox.scrollIntoView({
-      behavior: "smooth"
-    });
-
-  };
-
-
-  /*
-   * MULAI
-   */
-
-  loadVideo();
-
+  } catch (e) {
+    feed.innerHTML = `<div class="status-msg">Gagal memuat video.</div>`;
+  }
 })();
-
 </script>
 
 </body>
