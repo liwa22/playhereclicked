@@ -1,25 +1,21 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>DOODSTREAM PRO MILD</title>  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">  <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>DOODSTREAM PRO MILD - DEBUG</title>  <style>
     * {
-      margin: 0;
-      padding: 0;
       box-sizing: border-box;
     }
 
     body {
+      margin: 0;
       background: #F9F4FB;
-      font-family: 'Roboto', sans-serif;
+      font-family: Arial, sans-serif;
       color: #333;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
 
     header {
       background: linear-gradient(170deg, #B772FF, #E682C9);
-      padding: 5px;
+      padding: 10px;
       text-align: center;
     }
 
@@ -36,217 +32,690 @@
     }
 
     main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       padding: 20px;
       text-align: center;
     }
 
-    h2 {
-      font-size: 2rem;
-      color: #444;
+    #videoTitle {
       margin-bottom: 20px;
     }
 
     .video-container {
       width: 100%;
       max-width: 900px;
-      background: #fff;
-      border-radius: 20px;
+      margin: auto;
+      background: #000;
+      border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      border: 2px solid #f0f8ff;
     }
 
     video {
       display: block;
       width: 100%;
-      height: auto;
       max-height: 80vh;
-      border-radius: 18px;
       background: #000;
     }
 
+    .debug {
+      width: 100%;
+      max-width: 900px;
+      margin: 25px auto;
+      padding: 15px;
+      background: #111;
+      color: #00ff66;
+      text-align: left;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+
+    .success {
+      color: #00ff66;
+    }
+
+    .error {
+      color: #ff4444;
+    }
+
+    .warning {
+      color: #ffaa00;
+    }
+
     footer {
+      margin-top: 30px;
+      padding: 10px;
+      text-align: center;
       background: linear-gradient(135deg, #B772FF, #E682C9);
       color: white;
-      text-align: center;
-      padding: 10px 0;
     }
-
-    footer p {
-      margin: 0;
-      font-size: 0.9rem;
-    }
-
-    .d-none {
-      display: none !important;
-    }
-  </style>  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-</head><body><header>
-  <div class="small-image">
+  </style></head><body><header>  <div class="small-image">
     <img src="/IMG_3942.png" alt="Gambar">
-  </div>
-</header><main>  <h2 id="videoTitle">Loading...</h2>  <div class="video-container d-none" id="videoContainer"><video id="videoPlayer" controls playsinline preload="metadata">
+  </div></header><main>  <h2 id="videoTitle">Loading...</h2>  <!-- VIDEO -->  <div class="video-container"><video
+  id="videoPlayer"
+  controls
+  playsinline
+  preload="metadata">
 
-  <source id="videoSource" type="video/mp4">
+  <source
+    id="videoSource"
+    type="video/mp4">
 
-  Browser Anda tidak mendukung video.
+  Browser tidak mendukung video.
 
 </video>
 
+  </div>  <!-- DEBUG -->  <div class="debug" id="debugBox">Memulai debug...
+
   </div></main><footer>
-  <p>&copy; 2025 Doodstream Pro Mild. All rights reserved.</p>
+  &copy; 2025 Doodstream Pro Mild. All rights reserved.
 </footer><script>
 
+const debugBox = document.getElementById("debugBox");
+
+const videoTitle =
+  document.getElementById("videoTitle");
+
+const videoPlayer =
+  document.getElementById("videoPlayer");
+
+const videoSource =
+  document.getElementById("videoSource");
+
+
+function debug(message, type = "") {
+
+  const line = document.createElement("div");
+
+  line.textContent =
+    "[" + new Date().toLocaleTimeString() + "] " + message;
+
+  if (type) {
+    line.className = type;
+  }
+
+  debugBox.appendChild(line);
+
+  console.log(message);
+}
+
+
+
+/*
+==================================================
+1. CEK URL
+==================================================
+*/
+
+
+debug("================================");
+
+debug("1. CEK URL");
+
+debug("URL lengkap:");
+debug(window.location.href);
+
+debug("pathname:");
+debug(window.location.pathname);
+
+
+/*
+==================================================
+2. AMBIL ID DARI PATH
+==================================================
+*/
+
+
+let pathname = window.location.pathname;
+
+
+/*
+Hapus slash pertama
+*/
+
+let videoId =
+  pathname.replace(/^\/+/, "");
+
+
+/*
+Hapus slash terakhir jika ada
+*/
+
+videoId =
+  videoId.replace(/\/+$/, "");
+
+
+/*
+Decode URL
+*/
+
+try {
+
+  videoId =
+    decodeURIComponent(videoId);
+
+} catch (e) {
+
+  debug(
+    "Gagal decode URL: " + e.message,
+    "error"
+  );
+
+}
+
+
+debug("ID yang didapat:");
+
+debug(videoId || "(KOSONG)", "warning");
+
+
+/*
+==================================================
+3. CEK ID
+==================================================
+*/
+
+
+if (!videoId) {
+
+  videoTitle.textContent =
+    "ID VIDEO TIDAK ADA";
+
+  debug(
+    "ERROR: Tidak ada ID video pada URL.",
+    "error"
+  );
+
+}
+
+
+else {
+
+  videoTitle.textContent =
+    "Mencari: " + videoId;
+
+
   /*
-   * =====================================================
-   * AMBIL ID DARI URL
-   *
-   * Contoh:
-   *
-   * https://play.hereclicked.my.id/A7k2Q.mp4
-   *
-   * pathname:
-   * /A7k2Q.mp4
-   *
-   * ID:
-   * A7k2Q.mp4
-   * =====================================================
-   */
+  ================================================
+  4. FETCH Video.json
+  ================================================
+  */
 
-  const path = window.location.pathname;
 
-  const videoId = decodeURIComponent(
-    path.substring(1)
+  debug("================================");
+
+  debug("2. MENGAMBIL Video.json");
+
+  debug("URL JSON:");
+
+  debug(
+    new URL("/Video.json", window.location.origin).href
   );
 
 
+  fetch("/Video.json", {
+    cache: "no-cache"
+  })
+
+
+  .then(response => {
+
+    debug(
+      "HTTP Status Video.json: " +
+      response.status
+    );
+
+
+    debug(
+      "HTTP OK: " +
+      response.ok
+    );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Video.json gagal diambil. HTTP " +
+        response.status
+      );
+
+    }
+
+
+    return response.text();
+
+  })
+
+
   /*
-   * Jika membuka domain utama:
-   *
-   * https://play.hereclicked.my.id/
-   *
-   * maka tidak ada ID video.
-   */
+  ================================================
+  5. PARSE JSON
+  ================================================
+  */
 
-  if (!videoId || videoId === "404.html") {
 
-    document.getElementById("videoTitle").textContent =
-      "tobatlah wahai anak muda";
+  .then(text => {
 
-  } else {
+    debug("================================");
+
+    debug("3. ISI Video.json BERHASIL DIAMBIL");
+
+    debug(
+      "Ukuran JSON: " +
+      text.length +
+      " karakter"
+    );
+
+
+    let data;
+
+
+    try {
+
+      data = JSON.parse(text);
+
+    }
+
+    catch (e) {
+
+      debug(
+        "JSON TIDAK VALID!",
+        "error"
+      );
+
+      debug(
+        "Error JSON: " + e.message,
+        "error"
+      );
+
+      throw e;
+
+    }
+
+
+    debug(
+      "JSON berhasil diparse.",
+      "success"
+    );
+
 
     /*
-     * Ambil Video.json
-     */
-
-    fetch("/Video.json")
-
-      .then(response => {
-
-        if (!response.ok) {
-          throw new Error(
-            "Video.json gagal dimuat. HTTP " + response.status
-          );
-        }
-
-        return response.json();
-
-      })
-
-      .then(data => {
-
-        /*
-         * Format Video.json:
-         *
-         * {
-         *   "videos": [
-         *     {
-         *       "id": "A7k2Q.mp4",
-         *       "cdn": "https://..."
-         *     }
-         *   ]
-         * }
-         */
-
-        if (!data.videos || !Array.isArray(data.videos)) {
-
-          throw new Error(
-            "Format Video.json salah"
-          );
-
-        }
+    ==============================================
+    6. CEK FORMAT JSON
+    ==============================================
+    */
 
 
-        /*
-         * Cari ID video
-         */
+    debug("================================");
 
-        const videoData = data.videos.find(
-          video => video.id === videoId
-        );
+    debug("4. CEK FORMAT JSON");
 
 
-        /*
-         * Jika ID ditemukan
-         */
+    if (!data.videos) {
 
-        if (videoData) {
+      debug(
+        "ERROR: property 'videos' tidak ditemukan!",
+        "error"
+      );
 
-          document.getElementById("videoTitle").textContent =
-            videoData.id;
+      debug(
+        "Property yang tersedia: " +
+        Object.keys(data).join(", "),
+        "warning"
+      );
 
-          document.getElementById("videoSource").src =
-            videoData.cdn;
+      throw new Error(
+        "Format JSON salah: data.videos tidak ada"
+      );
 
-          document.getElementById("videoContainer")
-            .classList.remove("d-none");
-
-          document.getElementById("videoPlayer").load();
-
-        }
+    }
 
 
-        /*
-         * Jika ID tidak ditemukan
-         */
+    if (!Array.isArray(data.videos)) {
 
-        else {
+      debug(
+        "ERROR: videos bukan array!",
+        "error"
+      );
 
-          document.getElementById("videoTitle").textContent =
-            "Video not found";
+      throw new Error(
+        "data.videos bukan Array"
+      );
 
-          console.log(
-            "ID tidak ditemukan:",
-            videoId
-          );
+    }
 
-        }
 
-      })
+    debug(
+      "Format JSON benar.",
+      "success"
+    );
+
+
+    debug(
+      "Jumlah video dalam JSON: " +
+      data.videos.length
+    );
+
+
+    /*
+    ==============================================
+    7. CARI ID
+    ==============================================
+    */
+
+
+    debug("================================");
+
+    debug("5. MENCARI VIDEO");
+
+    debug(
+      "ID yang dicari: " +
+      videoId
+    );
+
+
+    const videoData =
+      data.videos.find(
+        video =>
+          String(video.id).trim() ===
+          String(videoId).trim()
+      );
+
+
+    /*
+    ==============================================
+    8. HASIL PENCARIAN
+    ==============================================
+    */
+
+
+    if (!videoData) {
+
+      debug(
+        "VIDEO TIDAK DITEMUKAN!",
+        "error"
+      );
 
 
       /*
-       * Error
-       */
+      Tampilkan beberapa ID
+      untuk membantu pengecekan
+      */
 
-      .catch(error => {
 
-        console.error(
-          "Error:",
-          error
+      debug(
+        "Contoh ID yang ada di JSON:"
+      );
+
+
+      data.videos
+        .slice(0, 10)
+        .forEach((video, index) => {
+
+          debug(
+            (index + 1) +
+            ". " +
+            video.id
+          );
+
+        });
+
+
+      videoTitle.textContent =
+        "Video not found";
+
+      return;
+
+    }
+
+
+    debug(
+      "VIDEO DITEMUKAN!",
+      "success"
+    );
+
+
+    debug(
+      "ID JSON: " +
+      videoData.id,
+      "success"
+    );
+
+
+    /*
+    ==============================================
+    9. CEK CDN
+    ==============================================
+    */
+
+
+    debug("================================");
+
+    debug("6. CEK CDN");
+
+
+    debug(
+      "CDN:"
+    );
+
+
+    debug(
+      videoData.cdn || "(KOSONG)",
+      videoData.cdn ? "success" : "error"
+    );
+
+
+    if (!videoData.cdn) {
+
+      throw new Error(
+        "Property cdn kosong"
+      );
+
+    }
+
+
+    /*
+    ==============================================
+    10. MASUKKAN CDN KE VIDEO
+    ==============================================
+    */
+
+
+    debug("================================");
+
+    debug("7. MEMASANG CDN KE VIDEO");
+
+
+    videoSource.src =
+      videoData.cdn;
+
+
+    debug(
+      "Source video:"
+    );
+
+
+    debug(
+      videoSource.src,
+      "success"
+    );
+
+
+    videoTitle.textContent =
+      videoData.id;
+
+
+    /*
+    ==============================================
+    11. LOAD VIDEO
+    ==============================================
+    */
+
+
+    videoPlayer.load();
+
+
+    debug(
+      "VideoPlayer.load() dipanggil.",
+      "success"
+    );
+
+
+    /*
+    ==============================================
+    12. EVENT VIDEO
+    ==============================================
+    */
+
+
+    videoPlayer.addEventListener(
+      "loadstart",
+      () => {
+
+        debug(
+          "VIDEO: loadstart"
         );
 
-        document.getElementById("videoTitle").textContent =
-          "Failed to load video data";
+      }
+    );
 
-      });
 
-  }
+    videoPlayer.addEventListener(
+      "loadedmetadata",
+      () => {
+
+        debug(
+          "VIDEO: metadata berhasil dimuat.",
+          "success"
+        );
+
+        debug(
+          "Durasi: " +
+          videoPlayer.duration +
+          " detik",
+          "success"
+        );
+
+      }
+    );
+
+
+    videoPlayer.addEventListener(
+      "canplay",
+      () => {
+
+        debug(
+          "VIDEO: canplay - video siap diputar.",
+          "success"
+        );
+
+      }
+    );
+
+
+    videoPlayer.addEventListener(
+      "playing",
+      () => {
+
+        debug(
+          "VIDEO: sedang diputar.",
+          "success"
+        );
+
+      }
+    );
+
+
+    videoPlayer.addEventListener(
+      "waiting",
+      () => {
+
+        debug(
+          "VIDEO: buffering...",
+          "warning"
+        );
+
+      }
+    );
+
+
+    videoPlayer.addEventListener(
+      "error",
+      () => {
+
+        debug(
+          "VIDEO ERROR!",
+          "error"
+        );
+
+
+        if (videoPlayer.error) {
+
+          debug(
+            "Video error code: " +
+            videoPlayer.error.code,
+            "error"
+          );
+
+          debug(
+            "Video error message: " +
+            videoPlayer.error.message,
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+
+    /*
+    ==============================================
+    SELESAI
+    ==============================================
+    */
+
+
+    debug("================================");
+
+    debug(
+      "PROSES SELESAI.",
+      "success"
+    );
+
+  })
+
+
+  /*
+  ================================================
+  ERROR FETCH / JSON
+  ================================================
+  */
+
+
+  .catch(error => {
+
+    debug("================================");
+
+    debug(
+      "ERROR AKHIR:",
+      "error"
+    );
+
+    debug(
+      error.message,
+      "error"
+    );
+
+
+    videoTitle.textContent =
+      "Gagal memuat video";
+
+  });
+
+}
 
 </script></body>
 </html>
