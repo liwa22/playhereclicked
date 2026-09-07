@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Penting untuk bypass proteksi hotlink Videy.co / CDN external -->
+<meta name="referrer" content="no-referrer">
 <title>DOODSTREAM PRO MILD</title>
 
 <style>
@@ -31,7 +33,6 @@ body {
 .feed-container {
   height: 100vh;
   width: 100vw;
-  overflow-y: mandatory;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
@@ -50,7 +51,8 @@ body {
 video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #000;
 }
 .status-msg {
   position: absolute;
@@ -61,6 +63,9 @@ video {
   font-size: 14px;
   text-align: center;
   pointer-events: none;
+  background: rgba(0,0,0,0.6);
+  padding: 8px 16px;
+  border-radius: 20px;
 }
 </style>
 </head>
@@ -75,17 +80,13 @@ video {
   const feed = document.getElementById("feed");
   const url = new URL(location.href);
 
-  // Ambil ID dari query parameter, hash, atau pathname
-  let targetId = url.searchParams.get("v");
-  if (!targetId && location.hash) {
-    targetId = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
-  }
-  if (!targetId) {
-    targetId = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, ""));
-  }
+  // Ambil ID dari URL (?v=, #, atau pathname)
+  let targetId = url.searchParams.get("v") || 
+                 (location.hash ? decodeURIComponent(location.hash.replace(/^#\/?/, "")) : null) || 
+                 decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, ""));
   if (targetId === "404.html") targetId = null;
 
-  // Fungsi mengacak array (Fisher-Yates Shuffle)
+  // Fungsi acak array (Fisher-Yates)
   const shuffle = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -96,7 +97,7 @@ video {
 
   try {
     const res = await fetch("/Video.json");
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error("Gagal memuat JSON");
 
     const data = await res.json();
     let videos = data.videos ? data.videos.filter(v => v && v.cdn) : [];
@@ -106,10 +107,10 @@ video {
       return;
     }
 
-    // Acak daftar video
+    // Acak urutan video
     videos = shuffle(videos);
 
-    // Jika ada ID target dari URL, pindahkan video tersebut ke paling atas
+    // Pindahkan video target ke urutan pertama jika ada ID di URL
     if (targetId) {
       const targetIndex = videos.findIndex(v => String(v.id).trim() === String(targetId).trim());
       if (targetIndex !== -1) {
@@ -118,7 +119,7 @@ video {
       }
     }
 
-    // Render kartu video ke DOM
+    // Render ke DOM
     videos.forEach((v) => {
       const card = document.createElement("div");
       card.className = "video-card";
@@ -129,29 +130,42 @@ video {
       videoEl.playsInline = true;
       videoEl.preload = "metadata";
       videoEl.loop = true;
+      videoEl.muted = true; // Muted diperlukan agar autoplay diizinkan browser HP/Desktop
+      videoEl.referrerPolicy = "no-referrer"; // Wajib agar tidak diblokir oleh CDN Videy/Dood
 
       const statusEl = document.createElement("div");
       statusEl.className = "status-msg";
       statusEl.textContent = "Memuat video...";
 
-      videoEl.onloadeddata = () => statusEl.remove();
-      videoEl.onerror = () => { statusEl.textContent = "Video gagal dimuat."; };
+      const hideStatus = () => { statusEl.style.display = "none"; };
+
+      videoEl.addEventListener("canplay", hideStatus);
+      videoEl.addEventListener("playing", hideStatus);
+      videoEl.addEventListener("error", () => {
+        statusEl.style.display = "block";
+        statusEl.textContent = "Video gagal dimuat.";
+      });
 
       card.appendChild(videoEl);
       card.appendChild(statusEl);
       feed.appendChild(card);
     });
 
-    // Fitur Auto Play/Pause berbasis Intersection Observer (Scroll Detection)
+    // Sensor scroll untuk Autoplay & Auto Pause
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const video = entry.target.querySelector("video");
         if (!video) return;
 
         if (entry.isIntersecting) {
-          video.play().catch(() => {
-            // Menangani pembatasan autoplay browser jika video bersuara
-          });
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {
+              // Jika terhalang kebijakan suara, paksa mute lalu putar ulang
+              video.muted = true;
+              video.play();
+            });
+          }
         } else {
           video.pause();
           video.currentTime = 0;
@@ -162,7 +176,7 @@ video {
     document.querySelectorAll(".video-card").forEach(card => observer.observe(card));
 
   } catch (e) {
-    feed.innerHTML = `<div class="status-msg">Gagal memuat video.</div>`;
+    feed.innerHTML = `<div class="status-msg">Gagal memuat file Video.json</div>`;
   }
 })();
 </script>
