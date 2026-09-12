@@ -286,22 +286,17 @@ body{
 
 <main class="container">
 
-    <section class="video-wrapper">
+<section class="video-wrapper">
 
-     <video
-            id="video"
-            controls
-            playsinline
-            preload="metadata">
-        </video>
-        <button
-            class="download-btn"
-            onclick="downloadVideo()"
-            title="Download">
-            ↓
-        </button>
+    <video
+        id="video"
+        controls
+        controlsList="nodownload"
+        playsinline
+        preload="metadata">
+    </video>
 
-    </section>
+</section>
 
 
     <section class="content">
@@ -640,29 +635,6 @@ Catatan:
 browser/CDN dapat membatasi download
 melalui CORS.
 */
-function downloadVideo(){
-
-    if(!currentVideo?.cdn){
-        return;
-    }
-
-    const link =
-        document.createElement("a");
-
-    link.href = currentVideo.cdn;
-    link.target = "_blank";
-    link.rel = "noopener";
-
-    link.download =
-        currentVideo.id + ".mp4";
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    link.remove();
-
-}
 
 
 /*
