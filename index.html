@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Stream Video</title>
 
-<!-- Plyr: library custom video controls open-source (MIT license), gratis, via CDN -->
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-
 <style>
 *{box-sizing:border-box}
 
@@ -93,6 +90,7 @@ body{
     aspect-ratio:16/9;
     background:#111;
     overflow:hidden;
+    user-select:none;
 }
 
 #video{
@@ -100,27 +98,94 @@ body{
     height:100%;
     display:block;
     background:#000;
-}
-
-/* Warna tema Plyr disamakan dengan aksen biru situs */
-:root{
-    --plyr-color-main:#1688c9;
+    cursor:pointer;
 }
 
 /*
-FAILSAFE: paksa sembunyikan tombol download/cast bawaan Chrome
-langsung lewat CSS, terlepas dari berhasil/tidaknya Plyr dimuat.
-Ini pseudo-element internal Chrome, tidak standar tapi didukung
-di semua versi Chrome/Edge modern.
+=========================================
+CUSTOM CONTROLS (tanpa library luar)
+=========================================
 */
-video::-internal-media-controls-download-button{
-    display:none !important;
+.custom-controls{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    padding:10px 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,0));
+    opacity:1;
+    transition:opacity .25s ease;
+    z-index:3;
 }
-video::-webkit-media-controls-enclosure{
-    overflow:hidden !important;
+
+.custom-controls.hidden{
+    opacity:0;
+    pointer-events:none;
 }
-video::-webkit-media-controls-panel-container{
-    width:calc(100% + 40px) !important;
+
+.ctrl-btn{
+    background:transparent;
+    border:0;
+    color:#fff;
+    font-size:20px;
+    cursor:pointer;
+    padding:4px 6px;
+    line-height:1;
+    flex:none;
+}
+
+.time-label{
+    color:#ddd;
+    font-size:12px;
+    flex:none;
+    min-width:38px;
+    text-align:center;
+}
+
+.seek-bar{
+    flex:1;
+    height:4px;
+    cursor:pointer;
+    accent-color:#1688c9;
+}
+
+.vol-bar{
+    width:70px;
+    height:4px;
+    cursor:pointer;
+    accent-color:#1688c9;
+}
+
+@media(max-width:600px){
+    .vol-bar{
+        display:none;
+    }
+    .ctrl-btn{
+        font-size:18px;
+    }
+}
+
+.big-play{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:66px;
+    height:66px;
+    border-radius:50%;
+    background:rgba(0,0,0,.55);
+    border:0;
+    color:#fff;
+    font-size:26px;
+    cursor:pointer;
+    z-index:3;
+}
+
+.big-play.hidden{
+    display:none;
 }
 
 .download-btn{
@@ -135,7 +200,7 @@ video::-webkit-media-controls-panel-container{
     color:white;
     font-size:27px;
     cursor:pointer;
-    z-index:2;
+    z-index:4;
 }
 
 .content{
@@ -310,22 +375,22 @@ video::-webkit-media-controls-panel-container{
 
 <main class="container">
 
-    <section class="video-wrapper">
+    <section class="video-wrapper" id="videoWrapper">
 
         <!--
-        controls dihapus dari sini sengaja: Plyr yang akan
-        membuat custom controls-nya via JS di bawah.
-        controlsList & disablePictureInPicture tetap dipasang
-        sebagai lapisan cadangan kalau Plyr gagal load.
+        TIDAK ADA atribut "controls" sama sekali.
+        Semua tombol di bawah ini dibuat manual pakai JS,
+        tidak ada library luar, tidak ada tombol download bawaan browser.
         -->
         <video
             id="video"
             playsinline
             preload="metadata"
-            controlsList="nodownload noremoteplayback noplaybackrate"
             disablePictureInPicture
+            controlsList="nodownload noremoteplayback"
             oncontextmenu="return false">
         </video>
+
         <button
             class="download-btn"
             onclick="downloadVideo()"
@@ -372,8 +437,9 @@ video::-webkit-media-controls-panel-container{
 
 </main>
 
-<!-- Plyr JS (gratis, open source) -->
-<script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+<!-- Fluid Player: library video player open-source & gratis, via CDN -->
+<script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
 
 <script>
 
@@ -381,15 +447,11 @@ video::-webkit-media-controls-panel-container{
 ====================================================
 KONFIGURASI
 ====================================================
-
 File JSON harus berada di:
-
 https://domainanda.com/videos.json
 
 Contoh URL halaman:
-
 https://domainanda.com/7BdhzE
-
 ID akan diambil dari bagian terakhir URL.
 */
 
@@ -397,29 +459,44 @@ const JSON_URL = "videos.json";
 
 let currentVideo = null;
 let allVideos = [];
-let player = null;
 
+const video = document.getElementById("video");
+let fluidInstance = null;
 
 /*
-Inisialisasi Plyr menggantikan native controls.
-Plyr tidak punya opsi download di menunya secara default.
+====================================================
+FLUID PLAYER
+====================================================
+Inisialisasi sekali saja, setelah src video diset di
+renderVideo(). Fluid Player pakai skin custom sendiri,
+tidak ada tombol download di kontrolnya secara default.
 */
-function initPlayer(){
+function initFluidPlayer(){
 
-    player = new Plyr("#video", {
-        controls: [
-            "play-large",
-            "play",
-            "progress",
-            "current-time",
-            "mute",
-            "volume",
-            "fullscreen"
-            // "download" dan "settings" (playback speed) sengaja tidak
-            // dimasukkan supaya tidak ada jalan pintas download/quality
-        ],
-        disableContextMenu: true,
-        clickToPlay: true
+    if(fluidInstance) return; // sudah pernah diinit, jangan dobel
+
+    fluidInstance = fluidPlayer("video", {
+        layoutControls: {
+            fillToContainer: true,
+            playButtonShowing: true,
+            playPauseAnimation: true,
+            autoPlay: false,
+            mute: false,
+            doubleclickFullscreen: true,
+            controlBar: {
+                autoHide: true,
+                autoHideTimeout: 3,
+                animated: true
+            },
+            allowDownload: false, // eksplisit matikan opsi download di UI
+            playbackRateEnabled: true,
+            allowTheatre: false,
+            keyboardControl: true,
+            contextMenu: {
+                controls: false, // sembunyikan menu klik-kanan bawaan Fluid Player juga
+                links: []
+            }
+        }
     });
 
 }
@@ -427,13 +504,7 @@ function initPlayer(){
 
 /*
 Ambil ID dari URL.
-
-Contoh:
-
-domain.com/7BdhzE
-
-hasil:
-7BdhzE
+domain.com/7BdhzE -> 7BdhzE
 */
 function getVideoId(){
 
@@ -450,18 +521,11 @@ function getVideoId(){
 }
 
 
-/*
-Format jumlah views.
-*/
 function formatViews(number){
-
     return Number(number || 0).toLocaleString("en-US");
 }
 
 
-/*
-Load JSON.
-*/
 async function loadVideos(){
 
     try{
@@ -479,11 +543,10 @@ async function loadVideos(){
         const id = getVideoId();
 
         currentVideo = allVideos.find(
-            video => String(video.id) === String(id)
+            v => String(v.id) === String(id)
         );
 
         if(!currentVideo){
-
             showError("Video tidak ditemukan.");
             return;
         }
@@ -492,164 +555,90 @@ async function loadVideos(){
         renderRelated(currentVideo);
 
     }catch(error){
-
         console.error(error);
-
-        showError(
-            "Gagal membaca videos.json"
-        );
-
+        showError("Gagal membaca videos.json");
     }
 }
 
 
-/*
-Tampilkan video utama.
-*/
-function renderVideo(video){
+function renderVideo(v){
 
-    const videoEl = document.getElementById("video");
+    document.title = v.title || "Stream Video";
 
-    document.title =
-        video.title || "Stream Video";
-
-    document.getElementById("title").textContent =
-        video.title || video.id;
+    document.getElementById("title").textContent = v.title || v.id;
 
     document.getElementById("views").textContent =
-        "◉ " + formatViews(video.views) + " views";
+        "◉ " + formatViews(v.views) + " views";
 
     document.getElementById("collection").textContent =
-        video.collection || "Videos";
+        v.collection || "Videos";
 
     document.getElementById("total").textContent =
-        (video.total_videos || allVideos.length) +
-        " videos";
+        (v.total_videos || allVideos.length) + " videos";
 
-    videoEl.src = video.cdn;
+    video.src = v.cdn;
 
-    if(video.thumbnail){
-        videoEl.poster = video.thumbnail;
+    if(v.thumbnail){
+        video.poster = v.thumbnail;
     }
 
-    // Baru inisialisasi Plyr setelah src terpasang
-    if(!player){
-        initPlayer();
-    }
+    initFluidPlayer();
 
 }
 
 
-/*
-Tampilkan video terkait.
-*/
 function renderRelated(current){
 
     const grid = document.getElementById("videoGrid");
-
     grid.innerHTML = "";
 
     let related = [];
 
-    /*
-    Jika JSON memiliki array related,
-    gunakan daftar tersebut.
-    */
     if(Array.isArray(current.related)){
-
         related = current.related
-            .map(id =>
-                allVideos.find(
-                    video => String(video.id) === String(id)
-                )
-            )
+            .map(id => allVideos.find(v => String(v.id) === String(id)))
             .filter(Boolean);
-
     }
 
-    /*
-    Jika related kosong,
-    gunakan video lain dari JSON.
-    */
     if(!related.length){
-
         related = allVideos
-            .filter(video =>
-                String(video.id) !== String(current.id)
-            )
+            .filter(v => String(v.id) !== String(current.id))
             .slice(0,20);
-
     }
 
+    related.forEach(v => {
 
-    related.forEach(video => {
-
-        const card =
-            document.createElement("article");
-
+        const card = document.createElement("article");
         card.className = "card";
-
         card.onclick = () => {
-
-            /*
-            URL:
-            /ID
-            */
-            window.location.href =
-                "/" + encodeURIComponent(video.id);
-
+            window.location.href = "/" + encodeURIComponent(v.id);
         };
 
-
-        const thumbnail =
-            document.createElement("div");
-
+        const thumbnail = document.createElement("div");
         thumbnail.className = "thumbnail";
 
-
-        if(video.thumbnail){
-
-            const img =
-                document.createElement("img");
-
-            img.src = video.thumbnail;
+        if(v.thumbnail){
+            const img = document.createElement("img");
+            img.src = v.thumbnail;
             img.loading = "lazy";
-
             thumbnail.appendChild(img);
-
         }
 
-
-        const info =
-            document.createElement("div");
-
+        const info = document.createElement("div");
         info.className = "card-info";
 
-
-        const title =
-            document.createElement("div");
-
+        const title = document.createElement("div");
         title.className = "card-title";
+        title.textContent = v.title || v.id;
 
-        title.textContent =
-            video.title || video.id;
-
-
-        const views =
-            document.createElement("div");
-
+        const views = document.createElement("div");
         views.className = "card-views";
-
-        views.textContent =
-            formatViews(video.views) + " views";
-
+        views.textContent = formatViews(v.views) + " views";
 
         info.appendChild(title);
         info.appendChild(views);
-
         card.appendChild(thumbnail);
         card.appendChild(info);
-
         grid.appendChild(card);
 
     });
@@ -657,112 +646,61 @@ function renderRelated(current){
 }
 
 
-/*
-Share.
-*/
 async function shareVideo(){
 
     const url = window.location.href;
 
     if(navigator.share){
-
         try{
-
             await navigator.share({
-                title:
-                    currentVideo?.title || "Video",
+                title: currentVideo?.title || "Video",
                 url:url
             });
-
         }catch(e){}
-
     }else{
-
         try{
-
             await navigator.clipboard.writeText(url);
-
             alert("Link berhasil disalin.");
-
         }catch(e){
-
-            prompt(
-                "Salin link ini:",
-                url
-            );
-
+            prompt("Salin link ini:", url);
         }
-
     }
 
 }
 
 
-/*
-Tombol download milik APLIKASI (bukan tombol bawaan browser).
-Ini tetap ada karena memang tombol yang Anda kontrol sendiri,
-bukan tombol yang otomatis muncul dari native player.
-*/
 function downloadVideo(){
 
-    if(!currentVideo?.cdn){
-        return;
-    }
+    if(!currentVideo?.cdn) return;
 
-    const link =
-        document.createElement("a");
-
+    const link = document.createElement("a");
     link.href = currentVideo.cdn;
     link.target = "_blank";
     link.rel = "noopener";
-
-    link.download =
-        currentVideo.id + ".mp4";
+    link.download = currentVideo.id + ".mp4";
 
     document.body.appendChild(link);
-
     link.click();
-
     link.remove();
 
 }
 
 
-/*
-Tombol Open App.
-Ganti URL ini dengan aplikasi Anda.
-*/
 function openApp(){
-
-    // Contoh:
-    // window.location.href =
-    // "https://play.google.com/store/apps/details?id=com.example.app";
-
     alert("Open App belum dikonfigurasi.");
-
 }
 
 
-/*
-Error.
-*/
 function showError(text){
 
-    document.querySelector(".video-wrapper")
-        .innerHTML =
-        '<div class="message">' +
-        text +
-        '</div>';
+    document.getElementById("videoWrapper").innerHTML =
+        '<div class="message">' + text + '</div>';
 
-    document.getElementById("title")
-        .textContent = text;
+    document.getElementById("title").textContent = text;
 
 }
 
 
-/*
-Mulai.
-*/
 loadVideos();
 
 </script>
