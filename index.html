@@ -107,6 +107,22 @@ body{
     --plyr-color-main:#1688c9;
 }
 
+/*
+FAILSAFE: paksa sembunyikan tombol download/cast bawaan Chrome
+langsung lewat CSS, terlepas dari berhasil/tidaknya Plyr dimuat.
+Ini pseudo-element internal Chrome, tidak standar tapi didukung
+di semua versi Chrome/Edge modern.
+*/
+video::-internal-media-controls-download-button{
+    display:none !important;
+}
+video::-webkit-media-controls-enclosure{
+    overflow:hidden !important;
+}
+video::-webkit-media-controls-panel-container{
+    width:calc(100% + 40px) !important;
+}
+
 .download-btn{
     position:absolute;
     right:18px;
