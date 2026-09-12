@@ -2,183 +2,707 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Penting untuk bypass proteksi hotlink Videy.co / CDN external -->
-<meta name="referrer" content="no-referrer">
-<title>DOODSTREAM PRO MILD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Stream Video</title>
 
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*{box-sizing:border-box}
+
+html,body{
+    margin:0;
+    padding:0;
+    background:#050505;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
 }
-body {
-  background: #000;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  overflow: hidden;
+
+body{
+    min-height:100vh;
 }
-.app-title {
-  position: fixed;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  font-size: 16px;
-  font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-  pointer-events: none;
+
+.topbar{
+    height:86px;
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
-.feed-container {
-  height: 100vh;
-  width: 100vw;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
+
+.appbar{
+    width:100%;
+    max-width:900px;
+    padding:0 18px;
+    display:flex;
+    align-items:center;
+    gap:13px;
 }
-.video-card {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+.logo{
+    width:56px;
+    height:56px;
+    flex:none;
+    border-radius:14px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:31px;
+    font-weight:900;
+    color:#7359d8;
 }
-video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: #000;
+
+.app-info{
+    flex:1;
+    min-width:0;
 }
-.status-msg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #aaa;
-  font-size: 14px;
-  text-align: center;
-  pointer-events: none;
-  background: rgba(0,0,0,0.6);
-  padding: 8px 16px;
-  border-radius: 20px;
+
+.app-name{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:3px;
+}
+
+.app-subtitle{
+    color:#aaa;
+    font-size:14px;
+}
+
+.open-app{
+    border:0;
+    border-radius:30px;
+    background:#1da1f2;
+    color:#fff;
+    padding:15px 24px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.container{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+}
+
+.video-wrapper{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:#111;
+    overflow:hidden;
+}
+
+#video{
+    width:100%;
+    height:100%;
+    display:block;
+    background:#000;
+}
+
+.download-btn{
+    position:absolute;
+    right:18px;
+    top:20px;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:1px solid #555;
+    background:rgba(35,35,35,.88);
+    color:white;
+    font-size:27px;
+    cursor:pointer;
+    z-index:2;
+}
+
+.content{
+    padding:18px 18px 35px;
+}
+
+.title{
+    font-size:20px;
+    font-weight:700;
+    line-height:1.35;
+    margin-bottom:8px;
+}
+
+.views{
+    color:#888;
+    font-size:14px;
+}
+
+.buttons{
+    display:flex;
+    gap:12px;
+    margin:22px 0 18px;
+}
+
+.button{
+    border:1px solid #30445d;
+    background:#080808;
+    color:white;
+    border-radius:28px;
+    padding:12px 24px;
+    font-size:14px;
+    cursor:pointer;
+}
+
+.button.open{
+    border-color:#1688c9;
+    color:#35b1f5;
+}
+
+.collection-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:10px 0 15px;
+    font-size:16px;
+    font-weight:700;
+}
+
+.video-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+}
+
+.card{
+    min-width:0;
+    background:#151515;
+    border-radius:6px;
+    overflow:hidden;
+    cursor:pointer;
+    transition:transform .15s ease;
+}
+
+.card:hover{
+    transform:translateY(-2px);
+}
+
+.thumbnail{
+    width:100%;
+    aspect-ratio:16/9;
+    background:#252525;
+    overflow:hidden;
+}
+
+.thumbnail img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.card-info{
+    padding:10px 11px 12px;
+}
+
+.card-title{
+    color:#eee;
+    font-size:14px;
+    line-height:1.3;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.card-views{
+    color:#777;
+    font-size:12px;
+    margin-top:6px;
+}
+
+.message{
+    padding:70px 20px;
+    text-align:center;
+    color:#888;
+}
+
+@media(max-width:600px){
+    .topbar{
+        height:86px;
+    }
+
+    .appbar{
+        padding:0 14px;
+    }
+
+    .logo{
+        width:55px;
+        height:55px;
+    }
+
+    .app-name{
+        font-size:19px;
+    }
+
+    .app-subtitle{
+        font-size:13px;
+    }
+
+    .open-app{
+        padding:14px 20px;
+    }
+
+    .content{
+        padding:17px 14px 30px;
+    }
+
+    .title{
+        font-size:18px;
+    }
+
+    .video-grid{
+        gap:14px;
+    }
+
+    .download-btn{
+        width:58px;
+        height:58px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="app-title">DOODSTREAM PRO MILD</div>
-<div class="feed-container" id="feed"></div>
+<header class="topbar">
+    <div class="appbar">
+
+        <div class="logo">P</div>
+
+        <div class="app-info">
+            <div class="app-name">PulsePlayer</div>
+            <div class="app-subtitle">Install app to save videos</div>
+        </div>
+
+        <button class="open-app" onclick="openApp()">
+            Open App
+        </button>
+
+    </div>
+</header>
+
+
+<main class="container">
+
+    <section class="video-wrapper">
+
+        <video
+            id="video"
+            controls
+            playsinline
+            preload="metadata">
+        </video>
+
+        <button
+            class="download-btn"
+            onclick="downloadVideo()"
+            title="Download">
+            ↓
+        </button>
+
+    </section>
+
+
+    <section class="content">
+
+        <div id="title" class="title">
+            Memuat video...
+        </div>
+
+        <div id="views" class="views">
+            ◉ 0 views
+        </div>
+
+
+        <div class="buttons">
+
+            <button class="button" onclick="shareVideo()">
+                Share
+            </button>
+
+            <button class="button open" onclick="openApp()">
+                Open App
+            </button>
+
+        </div>
+
+
+        <div class="collection-header">
+            <span id="collection">Videos</span>
+            <span id="total">0 videos</span>
+        </div>
+
+
+        <div id="videoGrid" class="video-grid"></div>
+
+    </section>
+
+</main>
+
 
 <script>
-(async () => {
-  const feed = document.getElementById("feed");
-  const url = new URL(location.href);
 
-  // Ambil ID dari URL (?v=, #, atau pathname)
-  let targetId = url.searchParams.get("v") || 
-                 (location.hash ? decodeURIComponent(location.hash.replace(/^#\/?/, "")) : null) || 
-                 decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g, ""));
-  if (targetId === "404.html") targetId = null;
+/*
+====================================================
+KONFIGURASI
+====================================================
 
-  // Fungsi acak array (Fisher-Yates)
-  const shuffle = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+File JSON harus berada di:
+
+https://domainanda.com/videos.json
+
+Contoh URL halaman:
+
+https://domainanda.com/7BdhzE
+
+ID akan diambil dari bagian terakhir URL.
+*/
+
+const JSON_URL = "videos.json";
+
+let currentVideo = null;
+let allVideos = [];
+
+
+/*
+Ambil ID dari URL.
+
+Contoh:
+
+domain.com/7BdhzE
+
+hasil:
+7BdhzE
+*/
+function getVideoId(){
+
+    const path = window.location.pathname
+        .replace(/^\/+|\/+$/g,"");
+
+    if(path){
+        return decodeURIComponent(path.split("/").pop());
     }
-    return array;
-  };
 
-  try {
-    const res = await fetch("/Video.json");
-    if (!res.ok) throw new Error("Gagal memuat JSON");
+    const params = new URLSearchParams(location.search);
 
-    const data = await res.json();
-    let videos = data.videos ? data.videos.filter(v => v && v.cdn) : [];
+    return params.get("id");
+}
 
-    if (videos.length === 0) {
-      feed.innerHTML = `<div class="status-msg">Video tidak ditemukan.</div>`;
-      return;
+
+/*
+Format jumlah views.
+*/
+function formatViews(number){
+
+    return Number(number || 0).toLocaleString("en-US");
+}
+
+
+/*
+Load JSON.
+*/
+async function loadVideos(){
+
+    try{
+
+        const response = await fetch(JSON_URL, {
+            cache:"no-cache"
+        });
+
+        if(!response.ok){
+            throw new Error("JSON tidak dapat dibuka");
+        }
+
+        allVideos = await response.json();
+
+        const id = getVideoId();
+
+        currentVideo = allVideos.find(
+            video => String(video.id) === String(id)
+        );
+
+        if(!currentVideo){
+
+            showError("Video tidak ditemukan.");
+            return;
+        }
+
+        renderVideo(currentVideo);
+        renderRelated(currentVideo);
+
+    }catch(error){
+
+        console.error(error);
+
+        showError(
+            "Gagal membaca videos.json"
+        );
+
+    }
+}
+
+
+/*
+Tampilkan video utama.
+*/
+function renderVideo(video){
+
+    const player = document.getElementById("video");
+
+    document.title =
+        video.title || "Stream Video";
+
+    document.getElementById("title").textContent =
+        video.title || video.id;
+
+    document.getElementById("views").textContent =
+        "◉ " + formatViews(video.views) + " views";
+
+    document.getElementById("collection").textContent =
+        video.collection || "Videos";
+
+    document.getElementById("total").textContent =
+        (video.total_videos || allVideos.length) +
+        " videos";
+
+    player.src = video.cdn;
+
+    if(video.thumbnail){
+        player.poster = video.thumbnail;
     }
 
-    // Acak urutan video
-    videos = shuffle(videos);
+}
 
-    // Pindahkan video target ke urutan pertama jika ada ID di URL
-    if (targetId) {
-      const targetIndex = videos.findIndex(v => String(v.id).trim() === String(targetId).trim());
-      if (targetIndex !== -1) {
-        const [targetVideo] = videos.splice(targetIndex, 1);
-        videos.unshift(targetVideo);
-      }
+
+/*
+Tampilkan video terkait.
+*/
+function renderRelated(current){
+
+    const grid = document.getElementById("videoGrid");
+
+    grid.innerHTML = "";
+
+    let related = [];
+
+    /*
+    Jika JSON memiliki array related,
+    gunakan daftar tersebut.
+    */
+    if(Array.isArray(current.related)){
+
+        related = current.related
+            .map(id =>
+                allVideos.find(
+                    video => String(video.id) === String(id)
+                )
+            )
+            .filter(Boolean);
+
     }
 
-    // Render ke DOM
-    videos.forEach((v) => {
-      const card = document.createElement("div");
-      card.className = "video-card";
-      
-      const videoEl = document.createElement("video");
-      videoEl.src = v.cdn;
-      videoEl.controls = true;
-      videoEl.playsInline = true;
-      videoEl.preload = "metadata";
-      videoEl.loop = true;
-      videoEl.muted = true; // Muted diperlukan agar autoplay diizinkan browser HP/Desktop
-      videoEl.referrerPolicy = "no-referrer"; // Wajib agar tidak diblokir oleh CDN Videy/Dood
+    /*
+    Jika related kosong,
+    gunakan video lain dari JSON.
+    */
+    if(!related.length){
 
-      const statusEl = document.createElement("div");
-      statusEl.className = "status-msg";
-      statusEl.textContent = "Memuat video...";
+        related = allVideos
+            .filter(video =>
+                String(video.id) !== String(current.id)
+            )
+            .slice(0,20);
 
-      const hideStatus = () => { statusEl.style.display = "none"; };
+    }
 
-      videoEl.addEventListener("canplay", hideStatus);
-      videoEl.addEventListener("playing", hideStatus);
-      videoEl.addEventListener("error", () => {
-        statusEl.style.display = "block";
-        statusEl.textContent = "Video gagal dimuat.";
-      });
 
-      card.appendChild(videoEl);
-      card.appendChild(statusEl);
-      feed.appendChild(card);
+    related.forEach(video => {
+
+        const card =
+            document.createElement("article");
+
+        card.className = "card";
+
+        card.onclick = () => {
+
+            /*
+            URL:
+            /ID
+            */
+            window.location.href =
+                "/" + encodeURIComponent(video.id);
+
+        };
+
+
+        const thumbnail =
+            document.createElement("div");
+
+        thumbnail.className = "thumbnail";
+
+
+        if(video.thumbnail){
+
+            const img =
+                document.createElement("img");
+
+            img.src = video.thumbnail;
+            img.loading = "lazy";
+
+            thumbnail.appendChild(img);
+
+        }
+
+
+        const info =
+            document.createElement("div");
+
+        info.className = "card-info";
+
+
+        const title =
+            document.createElement("div");
+
+        title.className = "card-title";
+
+        title.textContent =
+            video.title || video.id;
+
+
+        const views =
+            document.createElement("div");
+
+        views.className = "card-views";
+
+        views.textContent =
+            formatViews(video.views) + " views";
+
+
+        info.appendChild(title);
+        info.appendChild(views);
+
+        card.appendChild(thumbnail);
+        card.appendChild(info);
+
+        grid.appendChild(card);
+
     });
 
-    // Sensor scroll untuk Autoplay & Auto Pause
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const video = entry.target.querySelector("video");
-        if (!video) return;
+}
 
-        if (entry.isIntersecting) {
-          const playPromise = video.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => {
-              // Jika terhalang kebijakan suara, paksa mute lalu putar ulang
-              video.muted = true;
-              video.play();
+
+/*
+Share.
+*/
+async function shareVideo(){
+
+    const url = window.location.href;
+
+    if(navigator.share){
+
+        try{
+
+            await navigator.share({
+                title:
+                    currentVideo?.title || "Video",
+                url:url
             });
-          }
-        } else {
-          video.pause();
-          video.currentTime = 0;
+
+        }catch(e){}
+
+    }else{
+
+        try{
+
+            await navigator.clipboard.writeText(url);
+
+            alert("Link berhasil disalin.");
+
+        }catch(e){
+
+            prompt(
+                "Salin link ini:",
+                url
+            );
+
         }
-      });
-    }, { threshold: 0.6 });
 
-    document.querySelectorAll(".video-card").forEach(card => observer.observe(card));
+    }
 
-  } catch (e) {
-    feed.innerHTML = `<div class="status-msg">Gagal memuat file Video.json</div>`;
-  }
-})();
+}
+
+
+/*
+Download.
+
+Catatan:
+browser/CDN dapat membatasi download
+melalui CORS.
+*/
+function downloadVideo(){
+
+    if(!currentVideo?.cdn){
+        return;
+    }
+
+    const link =
+        document.createElement("a");
+
+    link.href = currentVideo.cdn;
+    link.target = "_blank";
+    link.rel = "noopener";
+
+    link.download =
+        currentVideo.id + ".mp4";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+}
+
+
+/*
+Tombol Open App.
+Ganti URL ini dengan aplikasi Anda.
+*/
+function openApp(){
+
+    // Contoh:
+    // window.location.href =
+    // "https://play.google.com/store/apps/details?id=com.example.app";
+
+    alert("Open App belum dikonfigurasi.");
+
+}
+
+
+/*
+Error.
+*/
+function showError(text){
+
+    document.querySelector(".video-wrapper")
+        .innerHTML =
+        '<div class="message">' +
+        text +
+        '</div>';
+
+    document.getElementById("title")
+        .textContent = text;
+
+}
+
+
+/*
+Mulai.
+*/
+loadVideos();
+
 </script>
 
 </body>
