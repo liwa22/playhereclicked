@@ -16,9 +16,7 @@ html,body{
     font-family:Arial,Helvetica,sans-serif;
 }
 
-body{
-    min-height:100vh;
-}
+body{min-height:100vh}
 
 .topbar{
     height:86px;
@@ -97,21 +95,6 @@ body{
     height:100%;
     display:block;
     background:#000;
-}
-
-.download-btn{
-    position:absolute;
-    right:18px;
-    top:20px;
-    width:60px;
-    height:60px;
-    border-radius:50%;
-    border:1px solid #555;
-    background:rgba(35,35,35,.88);
-    color:white;
-    font-size:27px;
-    cursor:pointer;
-    z-index:2;
 }
 
 .content{
@@ -219,47 +202,29 @@ body{
 }
 
 @media(max-width:600px){
-    .topbar{
-        height:86px;
-    }
 
-    .appbar{
-        padding:0 14px;
-    }
+    .topbar{height:86px}
+
+    .appbar{padding:0 14px}
 
     .logo{
         width:55px;
         height:55px;
     }
 
-    .app-name{
-        font-size:19px;
-    }
+    .app-name{font-size:19px}
 
-    .app-subtitle{
-        font-size:13px;
-    }
+    .app-subtitle{font-size:13px}
 
-    .open-app{
-        padding:14px 20px;
-    }
+    .open-app{padding:14px 20px}
 
     .content{
         padding:17px 14px 30px;
     }
 
-    .title{
-        font-size:18px;
-    }
+    .title{font-size:18px}
 
-    .video-grid{
-        gap:14px;
-    }
-
-    .download-btn{
-        width:58px;
-        height:58px;
-    }
+    .video-grid{gap:14px}
 }
 </style>
 </head>
@@ -283,21 +248,20 @@ body{
     </div>
 </header>
 
-
 <main class="container">
 
-<section class="video-wrapper">
+    <section class="video-wrapper">
 
-    <video
-        id="video"
-        controls
-        controlsList="nodownload"
-        playsinline
-        preload="metadata">
-    </video>
+        <video
+            id="video"
+            controls
+            controlsList="nodownload"
+            disablePictureInPicture
+            playsinline
+            preload="metadata">
+        </video>
 
-</section>
-
+    </section>
 
     <section class="content">
 
@@ -308,7 +272,6 @@ body{
         <div id="views" class="views">
             ◉ 0 views
         </div>
-
 
         <div class="buttons">
 
@@ -322,12 +285,10 @@ body{
 
         </div>
 
-
         <div class="collection-header">
             <span id="collection">Videos</span>
             <span id="total">0 videos</span>
         </div>
-
 
         <div id="videoGrid" class="video-grid"></div>
 
@@ -335,41 +296,13 @@ body{
 
 </main>
 
-
 <script>
-
-/*
-====================================================
-KONFIGURASI
-====================================================
-
-File JSON harus berada di:
-
-https://domainanda.com/videos.json
-
-Contoh URL halaman:
-
-https://domainanda.com/7BdhzE
-
-ID akan diambil dari bagian terakhir URL.
-*/
 
 const JSON_URL = "videos.json";
 
 let currentVideo = null;
 let allVideos = [];
 
-
-/*
-Ambil ID dari URL.
-
-Contoh:
-
-domain.com/7BdhzE
-
-hasil:
-7BdhzE
-*/
 function getVideoId(){
 
     const path = window.location.pathname
@@ -384,24 +317,16 @@ function getVideoId(){
     return params.get("id");
 }
 
-
-/*
-Format jumlah views.
-*/
 function formatViews(number){
 
     return Number(number || 0).toLocaleString("en-US");
 }
 
-
-/*
-Load JSON.
-*/
 async function loadVideos(){
 
     try{
 
-        const response = await fetch(JSON_URL, {
+        const response = await fetch(JSON_URL,{
             cache:"no-cache"
         });
 
@@ -418,7 +343,6 @@ async function loadVideos(){
         );
 
         if(!currentVideo){
-
             showError("Video tidak ditemukan.");
             return;
         }
@@ -430,23 +354,16 @@ async function loadVideos(){
 
         console.error(error);
 
-        showError(
-            "Gagal membaca videos.json"
-        );
+        showError("Gagal membaca videos.json");
 
     }
 }
 
-
-/*
-Tampilkan video utama.
-*/
 function renderVideo(video){
 
     const player = document.getElementById("video");
 
-    document.title =
-        video.title || "Stream Video";
+    document.title = video.title || "Stream Video";
 
     document.getElementById("title").textContent =
         video.title || video.id;
@@ -458,8 +375,7 @@ function renderVideo(video){
         video.collection || "Videos";
 
     document.getElementById("total").textContent =
-        (video.total_videos || allVideos.length) +
-        " videos";
+        (video.total_videos || allVideos.length) + " videos";
 
     player.src = video.cdn;
 
@@ -469,10 +385,6 @@ function renderVideo(video){
 
 }
 
-
-/*
-Tampilkan video terkait.
-*/
 function renderRelated(current){
 
     const grid = document.getElementById("videoGrid");
@@ -481,10 +393,6 @@ function renderRelated(current){
 
     let related = [];
 
-    /*
-    Jika JSON memiliki array related,
-    gunakan daftar tersebut.
-    */
     if(Array.isArray(current.related)){
 
         related = current.related
@@ -497,10 +405,6 @@ function renderRelated(current){
 
     }
 
-    /*
-    Jika related kosong,
-    gunakan video lain dari JSON.
-    */
     if(!related.length){
 
         related = allVideos
@@ -511,36 +415,26 @@ function renderRelated(current){
 
     }
 
-
     related.forEach(video => {
 
-        const card =
-            document.createElement("article");
+        const card = document.createElement("article");
 
         card.className = "card";
 
         card.onclick = () => {
 
-            /*
-            URL:
-            /ID
-            */
             window.location.href =
                 "/" + encodeURIComponent(video.id);
 
         };
 
-
-        const thumbnail =
-            document.createElement("div");
+        const thumbnail = document.createElement("div");
 
         thumbnail.className = "thumbnail";
 
-
         if(video.thumbnail){
 
-            const img =
-                document.createElement("img");
+            const img = document.createElement("img");
 
             img.src = video.thumbnail;
             img.loading = "lazy";
@@ -549,30 +443,20 @@ function renderRelated(current){
 
         }
 
-
-        const info =
-            document.createElement("div");
+        const info = document.createElement("div");
 
         info.className = "card-info";
 
-
-        const title =
-            document.createElement("div");
+        const title = document.createElement("div");
 
         title.className = "card-title";
+        title.textContent = video.title || video.id;
 
-        title.textContent =
-            video.title || video.id;
-
-
-        const views =
-            document.createElement("div");
+        const views = document.createElement("div");
 
         views.className = "card-views";
-
         views.textContent =
             formatViews(video.views) + " views";
-
 
         info.appendChild(title);
         info.appendChild(views);
@@ -586,10 +470,6 @@ function renderRelated(current){
 
 }
 
-
-/*
-Share.
-*/
 async function shareVideo(){
 
     const url = window.location.href;
@@ -599,8 +479,7 @@ async function shareVideo(){
         try{
 
             await navigator.share({
-                title:
-                    currentVideo?.title || "Video",
+                title:currentVideo?.title || "Video",
                 url:url
             });
 
@@ -616,10 +495,7 @@ async function shareVideo(){
 
         }catch(e){
 
-            prompt(
-                "Salin link ini:",
-                url
-            );
+            prompt("Salin link ini:",url);
 
         }
 
@@ -627,51 +503,21 @@ async function shareVideo(){
 
 }
 
-
-/*
-Download.
-
-Catatan:
-browser/CDN dapat membatasi download
-melalui CORS.
-*/
-
-
-/*
-Tombol Open App.
-Ganti URL ini dengan aplikasi Anda.
-*/
 function openApp(){
-
-    // Contoh:
-    // window.location.href =
-    // "https://play.google.com/store/apps/details?id=com.example.app";
 
     alert("Open App belum dikonfigurasi.");
 
 }
 
-
-/*
-Error.
-*/
 function showError(text){
 
-    document.querySelector(".video-wrapper")
-        .innerHTML =
-        '<div class="message">' +
-        text +
-        '</div>';
+    document.querySelector(".video-wrapper").innerHTML =
+        '<div class="message">' + text + '</div>';
 
-    document.getElementById("title")
-        .textContent = text;
+    document.getElementById("title").textContent = text;
 
 }
 
-
-/*
-Mulai.
-*/
 loadVideos();
 
 </script>
