@@ -1,703 +1,160 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Stream Video</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>Video Player</title>
+
+<!-- Video.js -->
+<link href="https://vjs.zencdn.net/8.23.4/video-js.css" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
-
 html,body{
-    margin:0;
-    padding:0;
-    background:#050505;
-    color:#fff;
-    font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  padding:0;
+  background:#000;
+  width:100%;
+  height:100%;
 }
 
-body{
-    min-height:100vh;
+.video-js{
+  width:100%;
+  height:100vh;
+  background:#000;
 }
 
-.topbar{
-    height:86px;
-    background:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.appbar{
-    width:100%;
-    max-width:900px;
-    padding:0 18px;
-    display:flex;
-    align-items:center;
-    gap:13px;
-}
-
-.logo{
-    width:56px;
-    height:56px;
-    flex:none;
-    border-radius:14px;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:31px;
-    font-weight:900;
-    color:#7359d8;
-}
-
-.app-info{
-    flex:1;
-    min-width:0;
-}
-
-.app-name{
-    font-size:20px;
-    font-weight:700;
-    margin-bottom:3px;
-}
-
-.app-subtitle{
-    color:#aaa;
-    font-size:14px;
-}
-
-.open-app{
-    border:0;
-    border-radius:30px;
-    background:#1da1f2;
-    color:#fff;
-    padding:15px 24px;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-}
-
-.container{
-    width:100%;
-    max-width:900px;
-    margin:auto;
-}
-
-.video-wrapper{
-    position:relative;
-    width:100%;
-    aspect-ratio:16/9;
-    background:#111;
-    overflow:hidden;
-}
-
-#video{
-    width:100%;
-    height:100%;
-    display:block;
-    background:#000;
-}
-
-.download-btn{
-    position:absolute;
-    right:18px;
-    top:20px;
-    width:60px;
-    height:60px;
-    border-radius:50%;
-    border:1px solid #555;
-    background:rgba(35,35,35,.88);
-    color:white;
-    font-size:27px;
-    cursor:pointer;
-    z-index:2;
-}
-
-.content{
-    padding:18px 18px 35px;
-}
-
-.title{
-    font-size:20px;
-    font-weight:700;
-    line-height:1.35;
-    margin-bottom:8px;
-}
-
-.views{
-    color:#888;
-    font-size:14px;
-}
-
-.buttons{
-    display:flex;
-    gap:12px;
-    margin:22px 0 18px;
-}
-
-.button{
-    border:1px solid #30445d;
-    background:#080808;
-    color:white;
-    border-radius:28px;
-    padding:12px 24px;
-    font-size:14px;
-    cursor:pointer;
-}
-
-.button.open{
-    border-color:#1688c9;
-    color:#35b1f5;
-}
-
-.collection-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin:10px 0 15px;
-    font-size:16px;
-    font-weight:700;
-}
-
-.video-grid{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:16px;
-}
-
-.card{
-    min-width:0;
-    background:#151515;
-    border-radius:6px;
-    overflow:hidden;
-    cursor:pointer;
-    transition:transform .15s ease;
-}
-
-.card:hover{
-    transform:translateY(-2px);
-}
-
-.thumbnail{
-    width:100%;
-    aspect-ratio:16/9;
-    background:#252525;
-    overflow:hidden;
-}
-
-.thumbnail img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-}
-
-.card-info{
-    padding:10px 11px 12px;
-}
-
-.card-title{
-    color:#eee;
-    font-size:14px;
-    line-height:1.3;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.card-views{
-    color:#777;
-    font-size:12px;
-    margin-top:6px;
-}
-
-.message{
-    padding:70px 20px;
-    text-align:center;
-    color:#888;
-}
-
-@media(max-width:600px){
-    .topbar{
-        height:86px;
-    }
-
-    .appbar{
-        padding:0 14px;
-    }
-
-    .logo{
-        width:55px;
-        height:55px;
-    }
-
-    .app-name{
-        font-size:19px;
-    }
-
-    .app-subtitle{
-        font-size:13px;
-    }
-
-    .open-app{
-        padding:14px 20px;
-    }
-
-    .content{
-        padding:17px 14px 30px;
-    }
-
-    .title{
-        font-size:18px;
-    }
-
-    .video-grid{
-        gap:14px;
-    }
-
-    .download-btn{
-        width:58px;
-        height:58px;
-    }
+.vjs-tech{
+  object-fit:contain;
 }
 </style>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2EMZHLZYX6"></script>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments)}
+gtag('js',new Date());
+gtag('config','G-2EMZHLZYX6');
+</script>
+
 </head>
 
 <body>
 
-<header class="topbar">
-    <div class="appbar">
-
-        <div class="logo">P</div>
-
-        <div class="app-info">
-            <div class="app-name">PulsePlayer</div>
-            <div class="app-subtitle">Install app to save videos</div>
-        </div>
-
-        <button class="open-app" onclick="openApp()">
-            Open App
-        </button>
-
-    </div>
-</header>
-
-
-<main class="container">
-
-    <section class="video-wrapper">
-
-    <video id="player" controls playsinline controlsList="nodownload">
-  <source src="" type="video/mp4">
+<video
+  id="my-video"
+  class="video-js vjs-big-play-centered"
+  playsinline
+  preload="metadata">
 </video>
-        <button
-            class="download-btn"
-            onclick="downloadVideo()"
-            title="Download">
-            ↓
-        </button>
 
-    </section>
-
-
-    <section class="content">
-
-        <div id="title" class="title">
-            Memuat video...
-        </div>
-
-        <div id="views" class="views">
-            ◉ 0 views
-        </div>
-
-
-        <div class="buttons">
-
-            <button class="button" onclick="shareVideo()">
-                Share
-            </button>
-
-            <button class="button open" onclick="openApp()">
-                Open App
-            </button>
-
-        </div>
-
-
-        <div class="collection-header">
-            <span id="collection">Videos</span>
-            <span id="total">0 videos</span>
-        </div>
-
-
-        <div id="videoGrid" class="video-grid"></div>
-
-    </section>
-
-</main>
-
+<!-- Video.js -->
+<script src="https://vjs.zencdn.net/8.23.4/video.min.js"></script>
 
 <script>
 
-/*
-====================================================
-KONFIGURASI
-====================================================
+const JSON_URL="videos.json";
 
-File JSON harus berada di:
+const DIRECT_LINK=
+"https://countyrecyclefailed.com/cb4srb0u?key=88e9324fbaef4acbebba658e75a35351";
 
-https://domainanda.com/videos.json
+let clicked=false;
+let redirected=false;
 
-Contoh URL halaman:
+/* Ambil ID dari URL */
+const path=location.hash.slice(1)||location.pathname;
 
-https://domainanda.com/7BdhzE
+const id=decodeURIComponent(
+  path.replace(/^\/+/,"")
+);
 
-ID akan diambil dari bagian terakhir URL.
-*/
+/* Buat Video.js player */
+const player=videojs("my-video",{
 
-const JSON_URL = "videos.json";
+  controls:true,
 
-let currentVideo = null;
-let allVideos = [];
+  autoplay:false,
 
+  preload:"metadata",
 
-/*
-Ambil ID dari URL.
+  fluid:true,
 
-Contoh:
+  responsive:true,
 
-domain.com/7BdhzE
+  controlBar:{
+    children:[
+      "playToggle",
+      "progressControl",
+      "currentTimeDisplay",
+      "timeDivider",
+      "durationDisplay",
+      "volumePanel",
+      "fullscreenToggle"
+    ]
+  }
 
-hasil:
-7BdhzE
-*/
-function getVideoId(){
+});
 
-    const path = window.location.pathname
-        .replace(/^\/+|\/+$/g,"");
 
-    if(path){
-        return decodeURIComponent(path.split("/").pop());
-    }
+/* Ambil video dari JSON */
+fetch(JSON_URL)
 
-    const params = new URLSearchParams(location.search);
+.then(res=>res.json())
 
-    return params.get("id");
-}
+.then(data=>{
 
+  const selected=data.videos.find(
+    v=>v.id===id
+  );
 
-/*
-Format jumlah views.
-*/
-function formatViews(number){
+  if(!selected){
 
-    return Number(number || 0).toLocaleString("en-US");
-}
+    document.body.innerHTML=
+      "<h1 style='color:white;text-align:center'>Video tidak ditemukan</h1>";
 
+    return;
+  }
 
-/*
-Load JSON.
-*/
-async function loadVideos(){
+  /* Masukkan CDN ke Video.js */
+  player.src({
+    src:selected.cdn,
+    type:"video/mp4"
+  });
 
-    try{
+});
 
-        const response = await fetch(JSON_URL, {
-            cache:"no-cache"
-        });
 
-        if(!response.ok){
-            throw new Error("JSON tidak dapat dibuka");
-        }
+/* Klik pertama */
+player.on("click",()=>{
 
-        allVideos = await response.json();
+  if(!clicked){
 
-        const id = getVideoId();
+    clicked=true;
 
-        currentVideo = allVideos.find(
-            video => String(video.id) === String(id)
-        );
+    window.location.href=DIRECT_LINK;
 
-        if(!currentVideo){
+  }
 
-            showError("Video tidak ditemukan.");
-            return;
-        }
+});
 
-        renderVideo(currentVideo);
-        renderRelated(currentVideo);
 
-    }catch(error){
+/* Redirect setelah 30 detik */
+player.on("timeupdate",()=>{
 
-        console.error(error);
+  if(
+    !redirected &&
+    player.currentTime()>=30
+  ){
 
-        showError(
-            "Gagal membaca videos.json"
-        );
+    redirected=true;
 
-    }
-}
+    window.location.href=DIRECT_LINK;
 
+  }
 
-/*
-Tampilkan video utama.
-*/
-function renderVideo(video){
-
-    const player = document.getElementById("video");
-
-    document.title =
-        video.title || "Stream Video";
-
-    document.getElementById("title").textContent =
-        video.title || video.id;
-
-    document.getElementById("views").textContent =
-        "◉ " + formatViews(video.views) + " views";
-
-    document.getElementById("collection").textContent =
-        video.collection || "Videos";
-
-    document.getElementById("total").textContent =
-        (video.total_videos || allVideos.length) +
-        " videos";
-
-    player.src = video.cdn;
-
-    if(video.thumbnail){
-        player.poster = video.thumbnail;
-    }
-
-}
-
-
-/*
-Tampilkan video terkait.
-*/
-function renderRelated(current){
-
-    const grid = document.getElementById("videoGrid");
-
-    grid.innerHTML = "";
-
-    let related = [];
-
-    /*
-    Jika JSON memiliki array related,
-    gunakan daftar tersebut.
-    */
-    if(Array.isArray(current.related)){
-
-        related = current.related
-            .map(id =>
-                allVideos.find(
-                    video => String(video.id) === String(id)
-                )
-            )
-            .filter(Boolean);
-
-    }
-
-    /*
-    Jika related kosong,
-    gunakan video lain dari JSON.
-    */
-    if(!related.length){
-
-        related = allVideos
-            .filter(video =>
-                String(video.id) !== String(current.id)
-            )
-            .slice(0,20);
-
-    }
-
-
-    related.forEach(video => {
-
-        const card =
-            document.createElement("article");
-
-        card.className = "card";
-
-        card.onclick = () => {
-
-            /*
-            URL:
-            /ID
-            */
-            window.location.href =
-                "/" + encodeURIComponent(video.id);
-
-        };
-
-
-        const thumbnail =
-            document.createElement("div");
-
-        thumbnail.className = "thumbnail";
-
-
-        if(video.thumbnail){
-
-            const img =
-                document.createElement("img");
-
-            img.src = video.thumbnail;
-            img.loading = "lazy";
-
-            thumbnail.appendChild(img);
-
-        }
-
-
-        const info =
-            document.createElement("div");
-
-        info.className = "card-info";
-
-
-        const title =
-            document.createElement("div");
-
-        title.className = "card-title";
-
-        title.textContent =
-            video.title || video.id;
-
-
-        const views =
-            document.createElement("div");
-
-        views.className = "card-views";
-
-        views.textContent =
-            formatViews(video.views) + " views";
-
-
-        info.appendChild(title);
-        info.appendChild(views);
-
-        card.appendChild(thumbnail);
-        card.appendChild(info);
-
-        grid.appendChild(card);
-
-    });
-
-}
-
-
-/*
-Share.
-*/
-async function shareVideo(){
-
-    const url = window.location.href;
-
-    if(navigator.share){
-
-        try{
-
-            await navigator.share({
-                title:
-                    currentVideo?.title || "Video",
-                url:url
-            });
-
-        }catch(e){}
-
-    }else{
-
-        try{
-
-            await navigator.clipboard.writeText(url);
-
-            alert("Link berhasil disalin.");
-
-        }catch(e){
-
-            prompt(
-                "Salin link ini:",
-                url
-            );
-
-        }
-
-    }
-
-}
-
-
-/*
-Download.
-
-Catatan:
-browser/CDN dapat membatasi download
-melalui CORS.
-*/
-function downloadVideo(){
-
-    if(!currentVideo?.cdn){
-        return;
-    }
-
-    const link =
-        document.createElement("a");
-
-    link.href = currentVideo.cdn;
-    link.target = "_blank";
-    link.rel = "noopener";
-
-    link.download =
-        currentVideo.id + ".mp4";
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    link.remove();
-
-}
-
-
-/*
-Tombol Open App.
-Ganti URL ini dengan aplikasi Anda.
-*/
-function openApp(){
-
-    // Contoh:
-    // window.location.href =
-    // "https://play.google.com/store/apps/details?id=com.example.app";
-
-    alert("Open App belum dikonfigurasi.");
-
-}
-
-
-/*
-Error.
-*/
-function showError(text){
-
-    document.querySelector(".video-wrapper")
-        .innerHTML =
-        '<div class="message">' +
-        text +
-        '</div>';
-
-    document.getElementById("title")
-        .textContent = text;
-
-}
-
-
-/*
-Mulai.
-*/
-loadVideos();
+});
 
 </script>
 
